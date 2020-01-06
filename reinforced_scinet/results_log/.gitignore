@@ -1,7 +1,2 @@
 *
-!publication/
-!publication/policy/
-!publication/policy/*
-!publication/selection/
-!publication/selection/*
 !.gitignore
