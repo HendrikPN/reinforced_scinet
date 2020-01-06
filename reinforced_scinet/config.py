@@ -33,11 +33,11 @@ class Config:
 
     LOAD_AE = False # load autoencoder
 
-    LOAD_AE_FILE = 'load_models/ae_pretrain.pth' # relative path where autoencoder is loaded from
+    LOAD_AE_FILE = 'load_models/ae_select.pth' # relative path where autoencoder is loaded from
 
     LOAD_AE_OPTIMIZER = False # load optimizer for autoencoder
 
-    LOAD_AE_OPT_FILE = 'load_models/optim_ae_pretrain.pth' # relative path where AE optimizer is loaded from
+    LOAD_AE_OPT_FILE = 'load_models/optim_ae_select.pth' # relative path where AE optimizer is loaded from
     
     LOAD_PS = {'env1': True, 'env2': True, 'env3': True} # load PS model 
 
