@@ -1,4 +1,4 @@
-# Reinforced SciNet -- representation learning in reinforcement learning environments
+# Reinforced SciNet
 
 This is `reinforced-scinet`, learning operationally meaningful representations of 
 reinforcement learning (RL) environments.
@@ -17,7 +17,7 @@ In particular, this repository contains:
 2. Code for asynchronous representation learning as described in the paper.
 3. Trained models along with detailed results from the evaluation of the model.
 
-The code for the examples that do not involve reinforcement learning can be found 
+The code for the examples that do not involve RL can be found 
 [here](https://github.com/tonymetger/communicating_scinet). 
 
 Enjoy!
