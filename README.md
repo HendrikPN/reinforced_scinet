@@ -1,13 +1,13 @@
 # Reinforced SciNet -- representation learning in reinforcement learning environments
 
-This is the `reinforced-scinet`, learning operationally meaningful representations of 
+This is `reinforced-scinet`, learning operationally meaningful representations of 
 reinforcement learning (RL) environments.
 
 This code accompanies our paper,
 
     H. Poulsen Nautrup, T. Metger, R. Iten, S. Jerbi, L.M. Trenkwalder, H. Wilming, H.J. Briegel and R. Renner
     Operationally meaningful representations of physical systems in neural networks,
-    arXiv:2001.XXXX [quant-ph], 2020.
+    arXiv:2001.00593 [quant-ph] (2020).
 
 If you use any of the code, please cite our paper.
 Here, we provide the [PyTorch](https://pytorch.org/) code for the examples from Sec. 6 of the paper and beyond. 
@@ -34,7 +34,7 @@ The architecture is designed to be asynchronous and may make use of a GPU. A mor
 in the paper.
 The specific architecture can be illustrated as follows:
 
-![Asynchronous RL](assets/images/rl_architecture_gpu.pdf)
+![Asynchronous RL](assets/images/rl_architecture_gpu.png)
 
 ## Example
 
@@ -58,7 +58,7 @@ from `selection` to `policy` mode, set `LOAD_PS` to `False` for all agents, and 
 For your convenience, we already provide the pretrained agents in the `load_models` folder. When training these agents,
 they performed as follows:
 
-![Results RL](assets/images/results_rl.pdf)
+![Results RL](assets/images/results_rl.png)
 
 ### Selection mode
 
@@ -71,4 +71,4 @@ At the same, selection neurons will pressure the encoder to create a representat
 shared among decoders efficiently.
 In obtaining the results in the paper, we observed the following loss:
 
-![Results Loss](assets/images/results_loss.pdf)
+![Results Loss](assets/images/results_loss.png)

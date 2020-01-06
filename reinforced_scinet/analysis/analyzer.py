@@ -96,7 +96,7 @@ class AnalyzerSubGridWorld():
                 ax.set_zlim(limit_min, limit_max)
 
         plt.tight_layout()
-        plt.savefig('results/latent_space.pdf')
+        plt.savefig('results/latent_space.png')
         plt.show()
 
     def plot_selection_figure(self):
@@ -154,7 +154,7 @@ class AnalyzerSubGridWorld():
 
         plt.tight_layout()
         plt.subplots_adjust(wspace=0.1, hspace=0.1)
-        plt.savefig('results/selection_figure.pdf')
+        plt.savefig('results/selection_figure.png')
         plt.show()
 
     def plot_results_figure(self, avg_mod=200):
@@ -175,7 +175,7 @@ class AnalyzerSubGridWorld():
         for index, env_id in enumerate(Config.ENV_IDS):
             self._plot_results(fig, index+1, env_id, avg_mod)
         plt.tight_layout()
-        plt.savefig('results/results_rl.pdf')
+        plt.savefig('results/results_rl.png')
         plt.show()
 
     def plot_loss_figure(self, avg_mod=100):
@@ -196,7 +196,7 @@ class AnalyzerSubGridWorld():
         for index, env_id in enumerate(Config.ENV_IDS):
             self._plot_results_loss(fig, index+2, env_id, 'Policy', avg_mod)
         plt.tight_layout()
-        plt.savefig('results/results_loss.pdf')
+        plt.savefig('results/results_loss.png')
         plt.show()
 
     # ----------------- helper methods ---------------------------------------------------------------------
@@ -426,6 +426,6 @@ class AnalyzerSubGridWorld():
         plt.ylim(0., 0.6)
         if label == 1:
             plt.title(f"Autoencoder")
-            plt.ylim(0., 0.001)
+            plt.ylim(0., 0.002)
             plt.ylabel("BCE loss", labelpad=15)
         plt.grid(True)

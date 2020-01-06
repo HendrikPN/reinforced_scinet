@@ -14,9 +14,9 @@
 
 from analyzer import AnalyzerSubGridWorld 
 
-PLOT_LATENT = True # plot the latent variable's behavior
+PLOT_LATENT = False # plot the latent variable's behavior
 PLOT_RESULTS = False # plot the performance of the RL agent
-PLOT_RESULTS_LOSS = False # plot the performance of pretrainer
+PLOT_RESULTS_LOSS = True # plot the performance of pretrainer
 PLOT_FIGURE =  False # plot the figure from the whitepaper
 
 ENV_ID = 'env2' # the environment id to be used (usually not relevant)
