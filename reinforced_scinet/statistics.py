@@ -65,8 +65,8 @@ class StatProcess(Process):
                         # Get episode log.
                         episode_time, env_id, \
                         total_reward, length = self.episode_log_q.get(timeout=Config.WAIT_STATS_INTERRUPT)
-                    loss_qsize = self.ae_loss_log_q.qsize()
-                    if Config.TRAIN_MODE == 'selection' and loss_qsize > 0:
+                    loss_q_empty = self.ae_loss_log_q.empty()
+                    if Config.TRAIN_MODE == 'selection' and not loss_q_empty:
                         # Get loss log.
                         training_time, loss_type, env_id_loss, \
                         loss, training_count = self.ae_loss_log_q.get(timeout=Config.WAIT_STATS_INTERRUPT)
@@ -84,7 +84,7 @@ class StatProcess(Process):
                                         % (episode_time.strftime("%Y-%m-%d %H:%M:%S"), 
                                         env_id, total_reward, length))
                     results_logger.flush()
-                if Config.TRAIN_MODE == 'selection' and loss_qsize > 0:
+                if Config.TRAIN_MODE == 'selection' and not loss_q_empty:
                     # Save loss log.
                     loss_logger.write('%s, %s, %s, %d, %10.8f\n' 
                                       % (training_time.strftime("%Y-%m-%d %H:%M:%S"), 
@@ -92,7 +92,7 @@ class StatProcess(Process):
                     loss_logger.flush()
                 if (Config.TRAIN_MODE == 'selection' and 
                     self.episode_count.value % Config.SELECTION_SAVE_FREQUENCY == 0 and 
-                    self.episode_count.value != 0 and loss_qsize > 0):
+                    self.episode_count.value != 0 and not loss_q_empty):
                     # Save selection log.
                     for env_id in Config.ENV_IDS:
                         selection = self.agents[env_id].selection.selectors.data.tolist()
@@ -117,7 +117,7 @@ class StatProcess(Process):
                           env_id,
                           self.episode_count.value, total_reward, length)
                     )
-                if Config.TRAIN_MODE == 'selection' and loss_qsize > 0:
+                if Config.TRAIN_MODE == 'selection' and not loss_q_empty:
                     print(
                         '[ Training #%12d ] '
                         '[ Episode #%8d ] '
