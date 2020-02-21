@@ -23,6 +23,8 @@ class ShortTermMemory():
         Short term memory contains memorized experience as observation, action and target h-value. All as torch.Tensors.
         It also contains the history of observations, actions, h-values and rewards.
         Memories are added from the history through backpropagation of the rewad via a glow mechanism. 
+        Additionally, we can add fake experience used for training decoders on the policy of an agent. 
+        That is, experience which corresponds to h-values that should be 0.
 
         Args:
             glow (float): Glow value which determines how much a reward is backpropagated.
@@ -34,8 +36,8 @@ class ShortTermMemory():
         self.memory_fake = deque()
         #:class:`list` of :obj:`tuple`: History of observations, actions, h-values and rewards.
         self.history = list()
-        #:class:`collections.deque` of :obj:`bool`: Queue of flags associated with experience to be remembered.
-        self.flags = deque()
+        #:class:`list` of :obj:`bool`: List of flags associated with experiences to be remembered.
+        self.flags = list()
 
     def create_experience(self):
         """
@@ -43,9 +45,9 @@ class ShortTermMemory():
         Does not reset history or memory before or after.
         """
         current_reward = 0
-        for hist in reversed(self.history):
+        for i, hist in enumerate(reversed(self.history)):
             observation, action, hval, reward = hist
-            is_saved = self.flags.pop()
+            is_saved = self.flags[-i-1]
             current_reward *= (1-self.glow)
             if reward:
                 current_reward += reward
@@ -87,15 +89,16 @@ class ShortTermMemory():
     
     def reset_history(self):
         """
-        Resets history.
+        Resets history and associated flags.
         """
         self.history = list()
+        self.flags = list()
         
     def reset(self):
         """
-        Resets both history and memory.
+        Resets history, memories and flags.
         """
         self.memory = deque()
         self.memory_fake = deque()
         self.history = list()
-        self.flags = deque()
+        self.flags = list()
