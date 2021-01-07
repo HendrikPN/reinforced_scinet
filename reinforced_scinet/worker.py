@@ -98,6 +98,8 @@ class WorkerProcess(Process):
         Args: 
             h_values (torch.Tensor): List of weights which define the probability distribution  
                                      over the action space. 
+            observation (torch.Tensor): Tensor which represents the current state of the environment. 
+            time_step (int): The current time step.
 
         Returns:
             action (int): Action index.

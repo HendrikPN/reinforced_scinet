@@ -105,7 +105,7 @@ class Config:
     
     INPUT_SIZE = 36 # FROM ENV SPEC: sum(grid_size)   
     
-    LATENT_SIZE = 3 # FROM ENV SPEC: minimum number of neurons to reproduce img    
+    LATENT_SIZE = 8 # FROM ENV SPEC: minimum number of neurons to reproduce img    
     
     NUM_ACTIONS = 6 # FROM ENV SPEC: number of available actions 
 
@@ -173,7 +173,9 @@ class Config:
 
     AGENT_PREDICT_DISCOUNT = 1.0 # the discount rate of the agent's loss in 'selection' mode
 
-    SELECTION_DISCOUNT = 0.02 # the discount rate of the selection neuron's loss
+    SELECTION_DISCOUNT = 0.04 # the discount rate of the selection neuron's loss
+
+    MIN_DISCOUNT = 0.02 # the discount rate of the representation minimization
 
     REWARD_RESCALE = 10.0 # factor by which the discounted reward is rescaled
 

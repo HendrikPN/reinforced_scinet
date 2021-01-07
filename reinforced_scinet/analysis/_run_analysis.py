@@ -16,18 +16,18 @@ from analyzer import AnalyzerSubGridWorld
 
 PLOT_LATENT = False # plot the latent variable's behavior
 PLOT_RESULTS = False # plot the performance of the RL agent
-PLOT_RESULTS_LOSS = True # plot the performance of pretrainer
-PLOT_FIGURE =  False # plot the figure from the whitepaper
+PLOT_RESULTS_LOSS = False # plot the performance of pretrainer
+PLOT_FIGURE =  True # plot the figure from the whitepaper
 
 ENV_ID = 'env2' # the environment id to be used (usually not relevant)
 
 if __name__ == "__main__":
-    analyzer = AnalyzerSubGridWorld(ENV_ID, load_model=PLOT_LATENT)
+    analyzer = AnalyzerSubGridWorld(ENV_ID, load_model=True)
     if PLOT_LATENT:
-        analyzer.plot_latent_space()
+        analyzer.plot_latent_space(limit=[-0.3, 0.3])
     if PLOT_RESULTS:
-        analyzer.plot_results_figure(avg_mod=200)
+        analyzer.plot_results_figure(avg_mod=200, limit=[0., 400.])
     if PLOT_RESULTS_LOSS:
-        analyzer.plot_loss_figure(avg_mod=100)
+        analyzer.plot_loss_figure(avg_mod=100, limitDec=[0., 2.], limitAE=[0., 0.02])
     if PLOT_FIGURE:
-        analyzer.plot_selection_figure()
+        analyzer.plot_selection_figure(plot_neurons=[6, 1, 0], limit=[-0.3, 0.3])

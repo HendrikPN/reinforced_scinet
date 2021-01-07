@@ -120,11 +120,11 @@ class Server:
         #list: Empty list for data processes.
         self.data = []
 
-        models = ()
+        selection = ()
         if Config.TRAIN_MODE == 'selection':
-            models = (self.agents[env_id+'_sel'] for env_id in Config.ENV_IDS)
+            selection = (self.agents[env_id+'_sel'].selection for env_id in Config.ENV_IDS)
         #:class:`Process`: Process for statistics that saves and logs statistics.
-        self.stats = StatProcess(*models)
+        self.stats = StatProcess(self.autoencoder.encoder.selection, *selection)
     
     def add_worker(self, env_id, agent_id):
         """
@@ -132,6 +132,7 @@ class Server:
 
         Args: 
             env_id (str): The id of the environment instance this worker is interacting with.
+            agent_id (int): The id of the worker process.
         """
         self.workers.append(WorkerProcess(self.experience_q[env_id], self.prediction_qs[env_id][agent_id], 
                                           self.observation_q[env_id], env_id, self.stats.episode_log_q, agent_id))
@@ -140,6 +141,9 @@ class Server:
     def rm_worker(self, index):
         """
         Passes exit flag to a specific worker process.
+
+        Args: 
+            index (int): The id of the worker process to be deleted.
         """
         self.workers[index].exit_flag.value = 1
     
@@ -177,6 +181,9 @@ class Server:
     def add_predictor(self, env_id):
         """
         Starts a prediction process.
+
+        Args: 
+            env_id (str): The id of the environment instance this predictor is using.
         """
         self.predictors.append(PredictorProcess(self.agents[env_id],
                                                 self.observation_q[env_id], self.prediction_qs[env_id], 
@@ -187,12 +194,18 @@ class Server:
     def rm_predictor(self, index):
         """
         Passes exit flag to a specific prediction process.
+
+        Args: 
+            index (int): The id of the predictor process to be deleted.
         """
         self.predictors[index].exit_flag.value = 1
     
     def add_data(self, env_id):
         """
         Start a data generation process.
+
+        Args: 
+            env_id (str): The id of the environment instance used for data generation.
         """
         self.data.append(DataProcess(self.experience_q[env_id], env_id, len(self.data)))
         self.data[-1].start()

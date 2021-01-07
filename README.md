@@ -67,7 +67,7 @@ Once you run the program, you should see numbers like the following:
 ```
 What you see is the training of the prediction agents and an autoencoder. Given an environment objective (here `env1`), the policy prediction has a smooth L1 loss of 1.2. The autoencoder trying to reproduce the input has a binary cross entropy loss of 0.2 97. Over time, this will be reduced while the selection neurons start affecting the latent representation with noise. A log of the amount of noise is being generated at `results_log/selection.txt`. There you find results like this:
 ```
-env1, [-9.83377456665039, -9.83377456665039, -9.83377456665039]
+env1, [-9.865717887878418, -9.865717887878418, -9.865717887878418, -9.865717887878418, -9.865717887878418, -9.865717887878418, -9.865717887878418, -9.865717887878418]
 ```
 These numbers quantify the noise of the three selection  neurons for the environment objective (or decoder agent) `env1`. Once one of these values increases above 0. the value of the associated latent neuron cannot be recovered by a decoder.
 
@@ -97,8 +97,20 @@ This is the current setting of the code and can be immediately performed by runn
 in the main directory.
 That is, if you run the code as is, you will start training one autoencoder and three decoders to predict the behavior 
 of the pretrained DPS agents. 
-At the same, selection neurons will pressure the encoder to create a representation of the observation that can be 
+At the same, selection neurons will pressure the encoder to create a minimal representation of the observation that can be 
 shared among decoders efficiently.
 In obtaining the results in the paper, we observed the following loss:
 
 ![Results Loss](assets/images/results_loss.png)
+
+### Data availability
+
+The data for the plots of the training progress here and in the publication is made available on 
+[Zenodo](https://doi.org/10.5281/zenodo.4425741).
+
+## What's New
+
++ 2021-01-07: Brand new results
++ 2021-01-07: Updated architecture and loss function for automated dimensionality reduction
++ 2020-02-21: Bug fixes
++ 2020-01-06: Hello world :)

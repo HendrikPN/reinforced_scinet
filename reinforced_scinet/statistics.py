@@ -23,11 +23,15 @@ import warnings
 from config import Config
 
 class StatProcess(Process):
-    def __init__(self, *args):
+    def __init__(self, encoder_sel, *args):
         """
         Statistics process saves the statistics obtained from workers.
         In particular, the shared models are saved every Config.MODEL_SAVE_FREQUENCY episodes.
         Moreover, some statistics are logged every Config.LOG_STATS_FREQUENCY episodes.
+
+        Args:
+            encoder_sel (:class:`Selection`): Selection neurons of :class:`DenseEncoder`.
+            *args: Arbitrary length list of :class:`Selection` neurons of :class:`DeepPS`.
         """
         super(StatProcess, self).__init__()
         self.episode_log_q = Queue(maxsize=Config.MAX_STATS_QUEUE_SIZE)
@@ -36,10 +40,12 @@ class StatProcess(Process):
         self.model_save = Value('i', 0)
         self.exit_flag = Value('i', 0)
 
-        #:obj:`dict`: Dictionary of DPS models for RL.
-        self.agents = {}
-        for model, env_id in zip(args, Config.ENV_IDS):
-            self.agents[env_id] = model
+        self.encoder_sel = encoder_sel
+
+        #:obj:`dict`: Dictionary of :class:`Selection` of DPS models for RL.
+        self.agents_sel = {}
+        for selection, env_id in zip(args, Config.ENV_IDS):
+            self.agents_sel[env_id] = selection
         #float: Time at start for logging.
         self._start_time = time.time()
     
@@ -95,8 +101,10 @@ class StatProcess(Process):
                     self.episode_count.value != 0 and not loss_q_empty):
                     # Save selection log.
                     for env_id in Config.ENV_IDS:
-                        selection = self.agents[env_id].selection.selectors.data.tolist()
+                        selection = self.agents_sel[env_id].selectors.data.tolist()
                         select_logger.write('%s, %s\n' % (env_id, str(selection)))
+                    selection = self.encoder_sel.selectors.data.tolist()
+                    select_logger.write('%s, %s\n' % ('enc', str(selection)))
                     select_logger.flush()
 
                 # (iii) Increments episode count.
