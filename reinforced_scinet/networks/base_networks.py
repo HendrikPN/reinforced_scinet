@@ -19,7 +19,8 @@ from torch.autograd import Variable
 class DenseEncoder(nn.Module):
     """
     A dense neural network which has a low-dimensional output 
-    representing latent variables of an abstract representation.
+    representing latent variables of an abstract representation with adjustable
+    dimensionality through :class:`Selection` neurons.
 
     Args:
         dim_input (int): The size of the input.
@@ -48,9 +49,12 @@ class DenseEncoder(nn.Module):
         # Building dense output/abstraction layer.
         self.abstraction = nn.Linear(dim_dense[-1], dim_latent)
 
+        # Building selection neurons.
+        self.selection = Selection(dim_latent)
+
     def forward(self, x):
         """
-        The forward pass through the encoder. 
+        The forward pass through the encoder without selection neurons. 
 
         Args:
             x (torch.Tensor): The input array.
@@ -65,6 +69,30 @@ class DenseEncoder(nn.Module):
             x = dense(x)
         # (iii) Abstraction
         out = self.abstraction(x)
+        return out
+
+    def forward_sel(self, x, rand):
+        """
+        The forward pass through the encoder with selection neurons.
+
+        Args:
+            x (torch.Tensor): The input array.
+            rand (torch.Tensor): Random samples from standard normal distribution of size (batch_size, size_latent).
+        
+        Returns:
+            out (torch.Tensor): The latent representation of the encoder after selection.
+        """
+        if x.size(0) == 1:
+            raise ValueError(f'Input batch size is incorrect: {x.size()}. Requires batch size > 1.')
+        # (i) Input
+        x = self.input(x)
+        # (ii) Dense
+        for dense in self.encoding:
+            x = dense(x)
+        # (iii) Abstraction
+        x = self.abstraction(x)
+        # (iv) Pass through selection neurons.
+        out = self.selection(x, rand)
         return out
 
 class DenseDecoder(nn.Module):
@@ -222,6 +250,8 @@ class DeepPS(nn.Module):
         init_kaiman (bool, optional): If this is set to True, network is initialized with weights sampled 
                                       from a uniform distribution according to the kaiming_uniform method.
                                       Default: True.
+        is_predictor (bool, optional): If this is set to True, this network is used as a predictor and not for RL.
+                                       Default: False.
     """
     def __init__(self, dim_latent, dim_action, dim_dense=[100, 64], init_kaiman=True, is_predictor=False):
         super(DeepPS, self).__init__()
@@ -259,7 +289,10 @@ class DeepPS(nn.Module):
 
     def _init_weights(self, layer):
         """
-        Initializes weights with kaiming_uniform method for ReLu from PyTorch. 
+        Initializes weights with kaiming_uniform method for ReLu from PyTorch.
+
+        Args:
+            layer (nn.Linear):  Layer to be initialized.
         """
         if type(layer) == nn.Linear:
             nn.init.kaiming_uniform_(layer.weight, mode='fan_in', nonlinearity='relu')
@@ -296,6 +329,10 @@ class DeepPS(nn.Module):
     def forward_no_selection(self, x, action):
         """
         The forward pass through the DeepPS w/o selection neurons.
+
+        Args:
+            x (torch.Tensor): The input array.
+            action (torch.Tensor): The input action array of shape (batch_size, dim_action).
         """
         # (i) Concatenate action and input.
         action = action.expand((x.size(0), -1))

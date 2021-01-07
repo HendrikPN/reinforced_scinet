@@ -44,7 +44,7 @@ class AnalyzerSubGridWorld():
 
         Args:
             env_id (str): The environment Id specifying which environment to use given a Config. 
-            load_model (bool): Whether or not to load the autoencoder as specified in Config. Defaults to False.
+            load_model (bool, optional): Whether or not to load the autoencoder as specified in Config. Default: False.
         """
         if not Config.ENV_NAME == 'subgridworld-v0':
             raise NotImplementedError("This analyzer is tailored to the sub-grid world environment. "+
@@ -61,13 +61,12 @@ class AnalyzerSubGridWorld():
             self.encoder.load_state_dict(loaded_dict)
             self.encoder = self.encoder.encoder
 
-    def plot_latent_space(self, limit_min=-1., limit_max=1.):
+    def plot_latent_space(self, limit=[-0.5, 0.5]):
         """
         This method plots the responses of all latent neurons to combinations of x,y,z positions.
 
         Args:
-            limit_min (float): The minimal value that is being plotted.
-            limit_max (float): The maximal value that is being pltoted.
+            limit (list, optional): The minimal and maximal value that are being plotted. Default: [-0.5, 0.5]
         """
         latent_neurons = range(Config.LATENT_SIZE)
         axes_label = ['x', 'y', 'z'] # all axes
@@ -86,24 +85,29 @@ class AnalyzerSubGridWorld():
                 # get responses for points
                 z = self._get_data_subgridworld(x, y, axes, ignore_axes[i], neuron)
 
-                ax = fig.add_subplot(3,3,index, projection='3d')
+                ax = fig.add_subplot(Config.LATENT_SIZE, 3, index, projection='3d')
                 surf = ax.plot_surface(x, y, z, cmap=cm.inferno,
-                                    linewidth=0, antialiased=False, vmin=limit_min, vmax=limit_max)
+                                    linewidth=0, antialiased=False, vmin=limit[0], vmax=limit[1])
 
-                ax.set_xlabel(f"{axes_label[axes[0]]}-axis", fontsize=22, labelpad=15)
-                ax.set_ylabel(f"{axes_label[axes[1]]}-axis", fontsize=22, labelpad=15)
-                ax.set_zlabel(f"Latent variable #{neuron}", fontsize=22, labelpad=15)
-                ax.set_zlim(limit_min, limit_max)
+                fs = 22 * 5/Config.LATENT_SIZE
+                ax.set_xlabel(f"{axes_label[axes[0]]}-axis", fontsize=fs, labelpad=15)
+                ax.set_ylabel(f"{axes_label[axes[1]]}-axis", fontsize=fs, labelpad=15)
+                ax.set_zlabel(f"Latent variable #{neuron}", fontsize=fs, labelpad=15)
+                ax.set_zlim(limit[0], limit[1])
 
-        plt.tight_layout()
+        plt.tight_layout(pad=1.5)
         plt.savefig('results/latent_space.png')
         plt.show()
 
-    def plot_selection_figure(self):
+    def plot_selection_figure(self, plot_neurons=[6, 1, 0], limit=[-0.3, 0.3]):
         """
         Plot for the figure as it appears in the whitepaper. 
+
+        Args:
+            plot_neurons (list): The indices of neurons to be plotted.
+            limit (list): The minimal and maximal value that are being plotted.
         """
-        latent_neurons = range(Config.LATENT_SIZE)
+        latent_neurons = plot_neurons # the relevant neurons
         axes_label = ['x', 'y', 'z'] # all axes
         show_axes = [[0,1], [1,2], [0,2]] # combinations of axes to be plotted
         ignore_axes = [2,0,1] # axes which are to be ignored per plot
@@ -127,9 +131,9 @@ class AnalyzerSubGridWorld():
                 # get responses for points
                 z = self._get_data_subgridworld(x, y, axes, ignore_axes[i], neuron)
                 # add plot to figure
-                ax = fig.add_subplot(3,3,index, projection='3d')
+                ax = fig.add_subplot(3, 3, index, projection='3d')
                 surf = ax.plot_surface(x, y, z, cmap=cm.inferno,
-                                    linewidth=0, antialiased=False, vmin=-1.2, vmax=1.2)
+                                    linewidth=0, antialiased=False, vmin=limit[0], vmax=limit[1])
 
                 # style changes: labels, ticks, limits,...
                 ax.set_xlabel(f"{axes_label[axes[0]]}-axis", fontsize=22, labelpad=15)
@@ -145,7 +149,7 @@ class AnalyzerSubGridWorld():
                     ax.text2D(0.01, 0.8, 'Latent neuron\nactivation', fontsize=25, transform=plt.gcf().transFigure)
                 if index in [4]:
                     ax.text2D(0.01, 0.5, 'Latent neuron\nactivation', fontsize=25, transform=plt.gcf().transFigure)
-                ax.set_zlim(-1.2, 1.2)
+                ax.set_zlim(limit[0], limit[1])
 
         # create plots of selection noise
         for neuron in latent_neurons:
@@ -154,16 +158,17 @@ class AnalyzerSubGridWorld():
 
         plt.tight_layout()
         plt.subplots_adjust(wspace=0.1, hspace=0.1)
-        plt.savefig('results/selection_figure.png')
+        plt.savefig('results/selection_figure.pdf')
         plt.show()
 
-    def plot_results_figure(self, avg_mod=200):
+    def plot_results_figure(self, avg_mod=200, limit=[0., 400.]):
         """
         Plots reinforcement learning results for the various agents in the sub-grid world environment.
         Plots the results from one results file.
 
         Args:
-            avg_mod (int): The number of elements to be averaged over. Defaults to 200.
+            avg_mod (int, optional): The number of elements to be averaged over. Default: 200.
+            limit (list, optional): The y-limit for the plot. Default: [0., 400.].
         """
         fig = plt.figure("Reinforcement learning results", figsize=(25,6))
 
@@ -173,18 +178,20 @@ class AnalyzerSubGridWorld():
         plt.rcParams.update(params)
 
         for index, env_id in enumerate(Config.ENV_IDS):
-            self._plot_results(fig, index+1, env_id, avg_mod)
+            self._plot_results(fig, index+1, env_id, avg_mod, limit)
         plt.tight_layout()
         plt.savefig('results/results_rl.png')
         plt.show()
 
-    def plot_loss_figure(self, avg_mod=100):
+    def plot_loss_figure(self, avg_mod=100, limitDec=[0.,1.], limitAE=[0.,0.01]):
         """
         Plots prediction loss results for the various decoders (and autoencoders) in the sub-grid world environment.
         Plots the results from one loss results file.
 
         Args:
-            avg_mod (int): The number of elements to be averaged over. Defaults to 100.
+            avg_mod (int, optional): The number of elements to be averaged over. Default: 100.
+            limitDec (list, optional): The y-limit for the decoders. Default: [0., 1.].
+            limitAE (list, optional): The y-limit for the autoencoder. Default: [0., 0.01].
         """
         fig = plt.figure("Prediction loss", figsize=(25,6))
 
@@ -192,9 +199,9 @@ class AnalyzerSubGridWorld():
         plt.rc('font', size=20)
         params = {'axes.linewidth': 1.}
         plt.rcParams.update(params)
-        self._plot_results_loss(fig, 1, None, 'Autoencoder', avg_mod)
+        self._plot_results_loss(fig, 1, None, 'Autoencoder', avg_mod, limitDec, limitAE)
         for index, env_id in enumerate(Config.ENV_IDS):
-            self._plot_results_loss(fig, index+2, env_id, 'Policy', avg_mod)
+            self._plot_results_loss(fig, index+2, env_id, 'Policy', avg_mod, limitDec, limitAE)
         plt.tight_layout()
         plt.savefig('results/results_loss.png')
         plt.show()
@@ -247,7 +254,7 @@ class AnalyzerSubGridWorld():
             
         return data.numpy()
 
-    def _plot_selection(self, fig, selection_neuron, index):
+    def _plot_selection(self, fig, selection_neuron, index, limit=[-10,10]):
         """
         Plots the selection noise in the figure for the whitepaper.
 
@@ -255,12 +262,13 @@ class AnalyzerSubGridWorld():
             fig (plt.figure): The figure in which the plot is to be displayed.
             selection_neuron (int): The index of the selection neuron to be plotted.
             index (int): The index in the figure.
+            limit (list, optional): The y-limit for the figure. Default: [-10, 10].
         """
         # get data points from file
         downsample = 10 # do not take all points from file
         with open('../results_log/selection.txt', 'r') as data:
             results_full = np.array([line.split() for line in data])
-            results_id = np.delete(results_full, [1,2,3], 1).flatten()
+            results_id = np.delete(results_full, [i for i in range(1, Config.LATENT_SIZE+1)], 1).flatten()
             results_full = np.delete(results_full, [0], 1)#.flatten()
         data.close()
 
@@ -271,7 +279,7 @@ class AnalyzerSubGridWorld():
 
         # create plot
         ax = fig.add_subplot(3,3,index)
-        for env_id in Config.ENV_IDS:
+        for env_id in Config.ENV_IDS + ['enc']:
             # get lines for specific env ID
             positions = np.where(results_id == env_id+',')
             results = results_full[positions]
@@ -302,15 +310,16 @@ class AnalyzerSubGridWorld():
         if index in [7]:
             ax.text(0.01, 0.15, 'Selection\nneuron\nactivation', fontsize=25, transform=plt.gcf().transFigure)
         if index in [9]:
-            legend = ax.legend(['Decoder 1','Decoder 2', 'Decoder 3'], loc="upper right", bbox_to_anchor=(1.09, 0.55))
+            legend = ax.legend(['Decoder 1','Decoder 2', 'Decoder 3', 'Encoder'], 
+                                loc="upper right", bbox_to_anchor=(1.09, 0.58))
             legend.get_frame().set_linewidth(2.0)
         plt.xlabel("Training Episodes", fontsize=25, labelpad=15)
         ax.grid(axis='y')
         ax.yaxis.set_major_locator(plt.MaxNLocator(6))
-        plt.ylim(-10,10)
+        plt.ylim(limit[0],limit[1])
 
 
-    def _plot_results(self, fig, label, env_id, avg_mod):
+    def _plot_results(self, fig, label, env_id, avg_mod, limit):
         """
         Plots the results for one agent with a specified environment id.
         The plot is compressed by averaging over `avg_mod` number of steps.
@@ -320,6 +329,7 @@ class AnalyzerSubGridWorld():
             label (int): The index of the plot in figure.
             env_id (str): The id of the environment for which the results are to be displayed.
             avg_mod (int): The number of elements to be averaged over.
+            limit (list): The y-limit for the plot.
         """
         ax = fig.add_subplot(1,3,label)
         # get results
@@ -360,9 +370,9 @@ class AnalyzerSubGridWorld():
             plt.setp(ax.get_yticklabels(), visible=False)
         plt.title(f"Agent #{label}")
         plt.grid(True)
-        plt.ylim(0,400)
+        plt.ylim(limit[0],limit[1])
 
-    def _plot_results_loss(self, fig, label, env_id, loss_type, avg_mod):
+    def _plot_results_loss(self, fig, label, env_id, loss_type, avg_mod, limitDec, limitAE):
         """
         Plots the prediction loss for decoders and autoencoder.
 
@@ -372,6 +382,8 @@ class AnalyzerSubGridWorld():
             env_id (str): The id of the environment for which the results are to be displayed.
             loss_type (str): The type of loss coming either from 'Autoencoder' or 'Policy'
             avg_mod (int): The number of elements to be averaged over.
+            limitDec (list): The y-limit for the decoder plot.
+            limitAE (list): The y-limit for the autoencoder plot.
 
         """
         ax = fig.add_subplot(1,4,label)
@@ -423,9 +435,9 @@ class AnalyzerSubGridWorld():
             # remove y label
             plt.setp(ax.get_yticklabels(), visible=False)
         plt.title(f"Decoder #{label-1}")
-        plt.ylim(0., 0.6)
+        plt.ylim(limitDec[0], limitDec[1])
         if label == 1:
             plt.title(f"Autoencoder")
-            plt.ylim(0., 0.002)
+            plt.ylim(limitAE[0], limitAE[1])
             plt.ylabel("BCE loss", labelpad=15)
         plt.grid(True)

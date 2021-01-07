@@ -64,7 +64,7 @@ class ShortTermMemory():
 
         Args:
             event (tuple): Tuple consisting of observation, action, h-value and reward.
-            flag (bool): Whether or not this event will be used for training. Default is True.
+            flag (bool, optional): Whether or not this event will be used for training. Default: True.
         """
         self.history.append(event)
         self.flags.append(flag)

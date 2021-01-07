@@ -94,7 +94,7 @@ class TrainerProcess(Process):
         if Config.TRAIN_MODE == 'policy':
             out_agent = self.agent.forward_no_selection(observation_batch, action_batch)
         elif Config.TRAIN_MODE == 'selection':
-            latent = self.autoencoder.encoder(observation_batch)
+            latent = self.autoencoder.encoder.forward_sel(observation_batch, rand_batch)
             out_dec = self.autoencoder.decoder(latent)
             out_agent = self.agent(latent, action_batch, rand_batch)
 
@@ -105,8 +105,10 @@ class TrainerProcess(Process):
         elif Config.TRAIN_MODE == 'selection':
             loss_ae = F.binary_cross_entropy(out_dec, observation_batch)
             loss_select = - self.agent.selection.selectors.sum()
+            loss_min = -self.autoencoder.encoder.selection.selectors.sum()
             loss = loss_agent * Config.AGENT_PREDICT_DISCOUNT + \
                    loss_select * Config.SELECTION_DISCOUNT + \
+                   loss_min * Config.MIN_DISCOUNT + \
                    loss_ae * Config.AE_DISCOUNT
 
         # (ii.4) Train
